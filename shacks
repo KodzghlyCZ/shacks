@@ -1,0 +1,51 @@
+# shacks — portable shell snippets (source this file; do not execute)
+#
+# Remote update check: on each source (e.g. new terminal), shacks runs git fetch and
+# warns if this repo is behind its upstream. Needs network when the check runs.
+#
+# To disable: export SHACKS_SKIP_UPDATE_CHECK=1 before sourcing this file, or change
+# the default on the next line from :-0 to :-1 in your local copy.
+SHACKS_SKIP_UPDATE_CHECK=${SHACKS_SKIP_UPDATE_CHECK:-0}
+#
+# Repo root: set SHACKS_REPO before sourcing, or omit it and bash/zsh will infer it from this file.
+#   SHACKS_REPO=$HOME/src/shacks && . "$SHACKS_REPO/shacks"
+#   . ~/src/shacks/shacks   # SHACKS_REPO filled in automatically
+
+if [ -z "${SHACKS_REPO-}" ]; then
+  if [ -n "${ZSH_VERSION-}" ]; then
+    _shacks_here="${(%):-%x}"
+    SHACKS_REPO="$(CDPATH= cd -P -- "$(dirname "$_shacks_here")" && pwd)"
+    unset _shacks_here
+  elif [ -n "${BASH_VERSION-}" ]; then
+    _shacks_here=${BASH_SOURCE[0]}
+    SHACKS_REPO="$(CDPATH= cd -P -- "$(dirname "$_shacks_here")" && pwd)"
+    unset _shacks_here
+  else
+    case "$0" in
+      */*)
+        _shacks_here=$0
+        SHACKS_REPO="$(CDPATH= cd -P -- "$(dirname "$_shacks_here")" && pwd)"
+        unset _shacks_here
+        ;;
+    esac
+  fi
+fi
+
+if [ -z "${SHACKS_REPO-}" ]; then
+  printf '%s\n' 'shacks: set SHACKS_REPO to your clone directory, then: . "$SHACKS_REPO/shacks"' >&2
+else
+  if [ "$SHACKS_SKIP_UPDATE_CHECK" != "1" ] && command -v git >/dev/null 2>&1; then
+    if GIT_TERMINAL_PROMPT=0 git -C "$SHACKS_REPO" rev-parse -q --verify '@{upstream}' >/dev/null 2>&1; then
+      if GIT_TERMINAL_PROMPT=0 git -C "$SHACKS_REPO" fetch -q 2>/dev/null; then
+        _shacks_behind=$(git -C "$SHACKS_REPO" rev-list --count HEAD..@{upstream} 2>/dev/null) || _shacks_behind=0
+        if [ "${_shacks_behind:-0}" -gt 0 ] 2>/dev/null; then
+          printf '%s\n' "shacks: ${_shacks_behind} commit(s) behind upstream — run shacks-update" >&2
+        fi
+        unset _shacks_behind
+      fi
+    fi
+  fi
+  alias shacks-update='git -C "$SHACKS_REPO" pull --ff-only'
+fi
+
+alias pu='sudo lsof -i -P -n | awk '\''/LISTEN/ {split($9,p,":"); print p[length(p)], $1}'\'' | sort -n | uniq | awk '\''{printf "%-6s %-s\n", $1, $2}'\'''
