@@ -7,7 +7,7 @@ Small shell helpers for an interactive session: a `pu` alias (listening ports an
 Clone the repo (use any directory you like instead of `~/src/shacks`; keep the path consistent with the lines you add to your shell config):
 
 ```bash
-git clone git@github.com:KodzghlyCZ/shacks.git ~/src/shacks
+git clone https://github.com/KodzghlyCZ/shacks.git ~/src/shacks
 ```
 
 Then add to **`~/.bashrc`** or **`~/.zshrc`** (adjust the path to match your clone):
