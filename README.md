@@ -2,17 +2,15 @@
 
 Small shell helpers for an interactive session: a `pu` alias (listening ports and owning processes) and **`shacks-update`**, which runs `git pull --ff-only` in **`SHACKS_REPO`** (this clone). You either set that directory once or let bash/zsh infer it when you source the snippet.
 
-## Clone
+## Install
+
+Clone the repo (use any directory you like instead of `~/src/shacks`; keep the path consistent with the lines you add to your shell config):
 
 ```bash
 git clone git@github.com:KodzghlyCZ/shacks.git ~/src/shacks
 ```
 
-Use any directory you like instead of `~/src/shacks`.
-
-## Install — `SHACKS_REPO` + one source line
-
-Add to **`~/.bashrc`** or **`~/.zshrc`** (adjust the path):
+Then add to **`~/.bashrc`** or **`~/.zshrc`** (adjust the path to match your clone):
 
 ```bash
 SHACKS_REPO=$HOME/src/shacks
@@ -46,6 +44,12 @@ shacks-update
 That uses the **`SHACKS_REPO`** from your session (see install above).
 
 **Note:** If `shacks-update` fails or aliases are not available, pull from your clone manually with `git -C /path/to/shacks pull --ff-only` (use your real clone path instead of `/path/to/shacks`).
+
+## Contributing
+
+Ideas and improvements are welcome. If you are comfortable with git and shell snippets, open a **pull request** (or merge request, depending on where you host a fork) with your change and a short note on what it does and why.
+
+If you do not write code or prefer not to touch the repo, that is fine too—open an **issue** instead. Describe the idea, pain point, or alias you wish you had; someone can pick it up or discuss it there.
 
 ## Requirements
 
