@@ -33,7 +33,7 @@ Aliases need an **interactive** shell (bash and zsh enable aliases that way). Do
 
 ## Update
 
-When you open a new shell and `shacks` is sourced, it runs a quiet **`git fetch`** and prints a warning to **stderr** if your clone is behind its upstream (so you can run **`shacks-update`**). That needs network on those logins. To turn it off, **`export SHACKS_SKIP_UPDATE_CHECK=1`** before sourcing, or change the default at the **top of the `shacks` file** from `:-0` to `:-1` in your copy.
+When you open a new shell and `shacks` is sourced, it starts a **background** **`git fetch`** so your prompt is not delayed; if your clone is behind its upstream, a warning is printed to **stderr** whenever that fetch finishes (often right after your prompt appears). That still needs network on those logins. To turn it off, **`export SHACKS_SKIP_UPDATE_CHECK=1`** before sourcing, or change the default at the **top of the `shacks` file** from `:-0` to `:-1` in your copy.
 
 After loading `shacks`, apply updates with:
 

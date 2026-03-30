@@ -1,7 +1,8 @@
 # shacks — portable shell snippets (source this file; do not execute)
 #
-# Remote update check: on each source (e.g. new terminal), shacks runs git fetch and
-# warns if this repo is behind its upstream. Needs network when the check runs.
+# Remote update check: on each source (e.g. new terminal), shacks starts a background
+# git fetch and warns on stderr when the repo is behind upstream (may appear after your
+# prompt returns). Needs network when the check runs; does not block the shell.
 #
 # To disable: export SHACKS_SKIP_UPDATE_CHECK=1 before sourcing this file, or change
 # the default on the next line from :-0 to :-1 in your local copy.
@@ -36,13 +37,21 @@ if [ -z "${SHACKS_REPO-}" ]; then
 else
   if [ "$SHACKS_SKIP_UPDATE_CHECK" != "1" ] && command -v git >/dev/null 2>&1; then
     if GIT_TERMINAL_PROMPT=0 git -C "$SHACKS_REPO" rev-parse -q --verify '@{upstream}' >/dev/null 2>&1; then
-      if GIT_TERMINAL_PROMPT=0 git -C "$SHACKS_REPO" fetch -q 2>/dev/null; then
-        _shacks_behind=$(git -C "$SHACKS_REPO" rev-list --count HEAD..@{upstream} 2>/dev/null) || _shacks_behind=0
-        if [ "${_shacks_behind:-0}" -gt 0 ] 2>/dev/null; then
-          printf '%s\n' "shacks: ${_shacks_behind} commit(s) behind upstream — run shacks-update" >&2
+      _shacks_fetch_check() {
+        _repo=$1
+        GIT_TERMINAL_PROMPT=0 git -C "$_repo" fetch -q 2>/dev/null || exit 0
+        _behind=$(git -C "$_repo" rev-list --count HEAD..@{upstream} 2>/dev/null) || _behind=0
+        if [ "${_behind:-0}" -gt 0 ] 2>/dev/null; then
+          printf '%s\n' "shacks: ${_behind} commit(s) behind upstream — run shacks-update" >&2
         fi
-        unset _shacks_behind
+      }
+      if [ -n "${ZSH_VERSION-}" ]; then
+        ( _shacks_fetch_check "$SHACKS_REPO" ) &!
+      else
+        ( _shacks_fetch_check "$SHACKS_REPO" ) &
+        disown "$!" 2>/dev/null || true
       fi
+      unset -f _shacks_fetch_check 2>/dev/null || true
     fi
   fi
   alias shacks-update='git -C "$SHACKS_REPO" pull --ff-only'
