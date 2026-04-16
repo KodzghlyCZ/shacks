@@ -57,4 +57,56 @@ else
   alias shacks-update='git -C "$SHACKS_REPO" pull --ff-only'
 fi
 
-alias pu='sudo lsof -i -P -n | awk '\''/LISTEN/ {split($9,p,":"); print p[length(p)], $1}'\'' | sort -n | uniq | awk '\''{printf "%-6s %-s\n", $1, $2}'\'''
+pu() {
+  sudo lsof -i -P -n | awk '/LISTEN/ {split($9,p,":"); print p[length(p)], $1}' | sort -n | uniq | awk '{printf "%-6s %-s\n", $1, $2}'
+}
+
+# Run command until it succeeds. -n max tries (omit or 0 = unlimited); -s pause between tries (default 1).
+retry() (
+  _retry_max=0
+  _retry_delay=1
+  while [ $# -gt 0 ]; do
+    case "$1" in
+      -n)
+        if [ $# -lt 2 ]; then
+          printf '%s\n' 'retry: -n requires a count' >&2
+          exit 2
+        fi
+        _retry_max=$2
+        shift 2
+        ;;
+      -s)
+        if [ $# -lt 2 ]; then
+          printf '%s\n' 'retry: -s requires seconds' >&2
+          exit 2
+        fi
+        _retry_delay=$2
+        shift 2
+        ;;
+      --)
+        shift
+        break
+        ;;
+      -*)
+        printf '%s\n' "retry: unknown option: $1" >&2
+        exit 2
+        ;;
+      *)
+        break
+        ;;
+    esac
+  done
+  if [ $# -eq 0 ]; then
+    printf '%s\n' 'usage: retry [-n max] [-s delay] command [args...]' >&2
+    exit 2
+  fi
+  _retry_count=0
+  while :; do
+    "$@" && exit 0
+    _retry_count=$((_retry_count + 1))
+    if [ "$_retry_max" -gt 0 ] && [ "$_retry_count" -ge "$_retry_max" ]; then
+      exit 1
+    fi
+    sleep "$_retry_delay"
+  done
+)

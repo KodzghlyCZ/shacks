@@ -1,6 +1,6 @@
 # shacks
 
-Small shell helpers for an interactive session: a `pu` alias (listening ports and owning processes) and **`shacks-update`**, which runs `git pull --ff-only` in **`SHACKS_REPO`** (this clone). You either set that directory once or let bash/zsh infer it when you source the snippet.
+Small shell helpers for an interactive session: a **`pu`** function (listening ports and owning processes), a **`retry`** function (re-run a command every *s* seconds until it exits 0, or stop after *n* failed runs), and a **`shacks-update`** alias (`git pull --ff-only` in **`SHACKS_REPO`**—this clone). You either set that directory once or let bash/zsh infer it when you source the snippet.
 
 ## Install
 
@@ -29,7 +29,7 @@ Minimal POSIX shells that do not expose the sourced file’s path should use the
 
 Reload your shell (`exec bash -l`, `exec zsh -l`, or a new terminal) so this runs once per session.
 
-Aliases need an **interactive** shell (bash and zsh enable aliases that way). Do not rely on a non-interactive `sh -c` session for `pu` / `shacks-update`.
+Use an **interactive** shell so **`shacks-update`** (an alias) is expanded; **`pu`** and **`retry`** are functions and follow the same expectation for a normal login session.
 
 ## Update
 
@@ -54,4 +54,5 @@ If you do not write code or prefer not to touch the repo, that is fine too—ope
 ## Requirements
 
 - `pu`: `sudo`, `lsof`, `awk`.
+- `retry`: `sleep` (and a shell with functions — bash or zsh is enough). Usage: `retry [-n max] [-s delay] command [args...]`. Omit **`-n`** (or use **`-n 0`**) for unlimited tries; **`-s`** defaults to **1** second between attempts. Use **`--`** if the command starts with `-`.
 - `shacks-update`: `git` and a clone with `origin` (normal after `git clone`).
