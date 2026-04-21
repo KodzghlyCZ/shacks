@@ -61,52 +61,26 @@ pu() {
   sudo lsof -i -P -n | awk '/LISTEN/ {split($9,p,":"); print p[length(p)], $1}' | sort -n | uniq | awk '{printf "%-6s %-s\n", $1, $2}'
 }
 
-# Run command until it succeeds. -n max tries (omit or 0 = unlimited); -s pause between tries (default 1).
+# Until cmd exits 0: -n max failures (omit/0 = ∞), -s seconds between tries (default 1).
 retry() (
-  _retry_max=0
-  _retry_delay=1
+  _m=0 _d=1 _c=0
   while [ $# -gt 0 ]; do
     case "$1" in
-      -n)
-        if [ $# -lt 2 ]; then
-          printf '%s\n' 'retry: -n requires a count' >&2
-          exit 2
-        fi
-        _retry_max=$2
+      -[ns])
+        [ $# -lt 2 ] && { printf '%s\n' "retry: $1 needs a value" >&2; exit 2; }
+        [ "$1" = -n ] && _m=$2 || _d=$2
         shift 2
         ;;
-      -s)
-        if [ $# -lt 2 ]; then
-          printf '%s\n' 'retry: -s requires seconds' >&2
-          exit 2
-        fi
-        _retry_delay=$2
-        shift 2
-        ;;
-      --)
-        shift
-        break
-        ;;
-      -*)
-        printf '%s\n' "retry: unknown option: $1" >&2
-        exit 2
-        ;;
-      *)
-        break
-        ;;
+      --) shift; break;;
+      -*) printf '%s\n' "retry: unknown option: $1" >&2; exit 2;;
+      *) break;;
     esac
   done
-  if [ $# -eq 0 ]; then
-    printf '%s\n' 'usage: retry [-n max] [-s delay] command [args...]' >&2
-    exit 2
-  fi
-  _retry_count=0
+  [ $# -eq 0 ] && { printf '%s\n' 'usage: retry [-n max] [-s delay] cmd [args...]' >&2; exit 2; }
   while :; do
     "$@" && exit 0
-    _retry_count=$((_retry_count + 1))
-    if [ "$_retry_max" -gt 0 ] && [ "$_retry_count" -ge "$_retry_max" ]; then
-      exit 1
-    fi
-    sleep "$_retry_delay"
+    _c=$((_c + 1))
+    [ "$_m" -gt 0 ] && [ "$_c" -ge "$_m" ] && exit 1
+    sleep "$_d"
   done
 )
