@@ -1,6 +1,6 @@
 # shacks
 
-Small shell helpers for an interactive session: a **`pu`** function (listening ports and owning processes), a **`retry`** function (re-run a command every *s* seconds until it exits 0, or stop after *n* failed runs), and a **`shacks-update`** alias (`git pull --ff-only` in **`SHACKS_REPO`**—this clone). You either set that directory once or let bash/zsh infer it when you source the snippet.
+Small shell helpers for an interactive session: **`pu`** (listening ports), **`gfp`** (`git fetch && git pull`, optional args go to **`git pull`** only), **`retry`** (re-run a command until it exits 0), and **`shacks-update`** (`git pull --ff-only` in **`SHACKS_REPO`**—this clone). You either set that directory once or let bash/zsh infer it when you source the snippet.
 
 ## Install
 
@@ -29,7 +29,7 @@ Minimal POSIX shells that do not expose the sourced file’s path should use the
 
 Reload your shell (`exec bash -l`, `exec zsh -l`, or a new terminal) so this runs once per session.
 
-Use an **interactive** shell so **`shacks-update`** (an alias) is expanded; **`pu`** and **`retry`** are functions and follow the same expectation for a normal login session.
+Use an **interactive** shell so **`shacks-update`** (an alias) is expanded; **`pu`**, **`gfp`**, and **`retry`** are functions and follow the same expectation for a normal login session.
 
 ## Update
 
@@ -54,5 +54,6 @@ If you do not write code or prefer not to touch the repo, that is fine too—ope
 ## Requirements
 
 - `pu`: `sudo`, `lsof`, `awk`.
+- `gfp`: `git`. Runs in whatever directory you are in (not limited to **`SHACKS_REPO`**). If you use **Oh My Zsh** with the **`git`** plugin instead, there is no single **`gfp`** alias, but **`gfa`** (`git fetch --all`) plus **`gl`** (`git pull`) is close; see the [git plugin README](https://github.com/ohmyzsh/ohmyzsh/tree/master/plugins/git). Plain **`git pull`** already fetches the upstream for the current branch, so **`gfp`** is for when you want an explicit **`fetch`** first (same defaults as **`git fetch`** with no args).
 - `retry`: `sleep` (and a shell with functions — bash or zsh is enough). Usage: `retry [-n max] [-s delay] command [args...]`. Omit **`-n`** (or use **`-n 0`**) for unlimited tries; **`-s`** defaults to **1** second between attempts. Use **`--`** if the command starts with `-`.
 - `shacks-update`: `git` and a clone with `origin` (normal after `git clone`).

@@ -61,6 +61,10 @@ pu() {
   sudo lsof -i -P -n | awk '/LISTEN/ {split($9,p,":"); print p[length(p)], $1}' | sort -n | uniq | awk '{printf "%-6s %-s\n", $1, $2}'
 }
 
+gfp() {
+  git fetch && git pull "$@"
+}
+
 # Until cmd exits 0: -n max failures (omit/0 = ∞), -s seconds between tries (default 1).
 retry() (
   _m=0 _d=1 _c=0
